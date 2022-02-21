@@ -11,6 +11,9 @@ public:
 	void Run();
 
 private:
+	Object CreateObject(int width, int height) const;
+
+private:
 	sf::RenderWindow mWindow;
 	Object mObject;
 };
