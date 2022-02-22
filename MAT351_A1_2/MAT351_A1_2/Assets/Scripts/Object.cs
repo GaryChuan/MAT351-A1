@@ -23,45 +23,21 @@ public class Object : MonoBehaviour
     public Text FinalOrientationText;
     public Text InitialOrientationText;
     public Text CurrentOrientationText;
+    public Text ErrorText;
 
-    void Start()
+    private bool loaded = false;
+
+    void Awake()
     {
-        var textArray = InputFile.text.Split('\n');
-        var info1 = textArray[0].Split(' ');
-        var info2 = textArray[1].Split(' ');
-        var info3 = textArray[2];
-
-        mInitial = 
-            Axis4DToQuaternions(
-                (float)Convert.ToDouble(info1[0]),
-                (float)Convert.ToDouble(info1[1]),
-                (float)Convert.ToDouble(info1[2]),
-                (float)(Convert.ToDouble(info1[3]) * Math.PI) / 180f
-            );
-
-        mFinal = 
-            Axis4DToQuaternions(
-                (float)Convert.ToDouble(info2[0]),
-                (float)Convert.ToDouble(info2[1]),
-                (float)Convert.ToDouble(info2[2]),
-                (float)(Convert.ToDouble(info2[3]) * Math.PI) / 180f
-            );
-
-        mMaxCount = Convert.ToUInt32(info3);
-
-        Debug.Log("Initial: "  + QuaternionToString(mInitial));
-        Debug.Log("Final: " + QuaternionToString(mFinal));
-        Debug.Log("N : " + mMaxCount);
-        
-        mOrientations =  new Dictionary<uint, Quaternion>();
-        SliderControl.maxValue = mMaxCount;
-
-        InitializeOrientations();
-        
-        InitialOrientationText.text = "Initial Orientation: " + QuaternionToString(mInitial);
-        FinalOrientationText.text = "Final Orientation: " + QuaternionToString(mFinal);
-        CurrentOrientationText.text = "Current Orientation: " + QuaternionToString(mOrientations[0]);
-
+        if(File.Exists(Application.dataPath + "/path.txt"))
+        {
+            Load();
+            loaded = true;
+        }
+        else
+        {
+            ErrorText.gameObject.SetActive(true);
+        }
     }
 
     string QuaternionToString(Quaternion q)
@@ -85,6 +61,46 @@ public class Object : MonoBehaviour
         return new Quaternion(axis.x, axis.y, axis.z, (float)Math.Cos(angle / 2));
     }
 
+    void Load()
+    {
+        StreamReader inputFile = File.OpenText(Application.dataPath + "/path.txt");
+
+        var info1 = inputFile.ReadLine()?.Split(' ');
+        var info2 = inputFile.ReadLine()?.Split(' ');
+        var info3 = inputFile.ReadLine();
+
+        mInitial = 
+            Axis4DToQuaternions(
+                (float)Convert.ToDouble(info1[0]),
+                (float)Convert.ToDouble(info1[1]),
+                (float)Convert.ToDouble(info1[2]),
+                (float)(Convert.ToDouble(info1[3]) * Math.PI) / 180f
+            );
+
+        mFinal = 
+            Axis4DToQuaternions(
+                (float)Convert.ToDouble(info2[0]),
+                (float)Convert.ToDouble(info2[1]),
+                (float)Convert.ToDouble(info2[2]),
+                (float)(Convert.ToDouble(info2[3]) * Math.PI) / 180f
+            );
+        
+        mMaxCount = Convert.ToUInt32(info3);
+
+        Debug.Log("Initial: "  + QuaternionToString(mInitial));
+        Debug.Log("Final: " + QuaternionToString(mFinal));
+        Debug.Log("N : " + mMaxCount);
+        
+        mOrientations =  new Dictionary<uint, Quaternion>();
+        SliderControl.maxValue = mMaxCount;
+
+        InitializeOrientations();
+        
+        InitialOrientationText.text = "Initial Orientation: " + QuaternionToString(mInitial);
+        FinalOrientationText.text = "Final Orientation: " + QuaternionToString(mFinal);
+        CurrentOrientationText.text = "Current Orientation: " + QuaternionToString(mOrientations[0]);
+    }
+
 
     void InitializeOrientations()
     { 
@@ -100,21 +116,26 @@ public class Object : MonoBehaviour
             serializedData += outputLine + "\r\n";
         }
 
-        var path = "Assets/Resources/output.txt"; //AssetDatabase.GetAssetPath(OutputFile);
+        // var path = "Assets/Resources/output.txt"; //AssetDatabase.GetAssetPath(OutputFile);
         
-        if(File.Exists(path))
-        {
-            StreamWriter writer = new StreamWriter(path, false);
-            writer.Write(serializedData);
-            writer.Flush();
+        StreamWriter file = File.CreateText(Application.dataPath + "/output.txt");
+        file.Write(serializedData);
+        file.Flush();
 
-            Debug.Log("Sucecssfully written to file");
-        }
-        else
-        {
-            Debug.Log(path + " could not be found!");
-        }
-
+        // if(File.Exists(path))
+        // {
+        //     StreamWriter writer = new StreamWriter(path, false);
+        //     writer.Write(serializedData);
+        //     writer.Flush();
+            
+        //     Debug.Log("Sucecssfully written to file");
+        // }
+        // else
+        // {
+        //     Debug.Log(path + " could not be found!");
+        // }
+        
+        // File.CreateText(Application.dataPath + "/outputt.txt");
         transform.rotation = mOrientations[0];
     }
 
@@ -137,20 +158,43 @@ public class Object : MonoBehaviour
 
     public void AdjustOrientation(float value)
     {
+        if(loaded == false)
+        {
+            SliderControl.value = 0;
+            return;
+        }
+
         mCount = (UInt32)value;
         transform.rotation = mOrientations[mCount];
         CurrentOrientationText.text = "Current Orientation: " + QuaternionToString(transform.rotation);
     }
 
+    public void Reload()
+    {
+        if(File.Exists(Application.dataPath + "/path.txt"))
+        {
+            Load();
+            ErrorText.gameObject.SetActive(false);
+            loaded = true;
+        }
+        else
+        {
+            ErrorText.gameObject.SetActive(true);
+            loaded = false;
+        }
+    }
+
     public void Reset()
     {
-        mCount = 0;
-        SliderControl.value = 0;
-        transform.rotation = mOrientations[mCount];
+        if(loaded)
+        {
+            mCount = 0;
+            SliderControl.value = 0;
+            transform.rotation = mOrientations[mCount];
+        }
     }
     public void QuitApp()
     {
-        Debug.Log("Quit Game");
         Application.Quit();
     }
 }
