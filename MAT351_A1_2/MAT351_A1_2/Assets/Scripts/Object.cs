@@ -13,13 +13,17 @@ public class Object : MonoBehaviour
     [SerializeField]
     TextAsset OutputFile;
 
-    public Slider SliderControl;
 
     Quaternion mInitial;
     Quaternion mFinal;
     UInt32 mMaxCount;
     UInt32 mCount = 0u;
     Dictionary<UInt32, Quaternion> mOrientations;
+
+    public Slider SliderControl;
+    public Text FinalOrientationText;
+    public Text InitialOrientationText;
+    public Text CurrentOrientationText;
 
     void Start()
     {
@@ -54,11 +58,21 @@ public class Object : MonoBehaviour
         SliderControl.maxValue = mMaxCount;
 
         InitializeOrientations();
+        
+        InitialOrientationText.text = "Initial Orientation: " + QuaternionToString(mInitial);
+        FinalOrientationText.text = "Final Orientation: " + QuaternionToString(mFinal);
+        CurrentOrientationText.text = "Current Orientation: " + QuaternionToString(mOrientations[0]);
+
     }
 
     string QuaternionToString(Quaternion q)
     {
-        return q.x + ", " + q.y + ", " + q.z + ", " + (q.w * 180 / Math.PI);
+        return "(" 
+             + q.x.ToString("F3") + ", " 
+             + q.y.ToString("F3") + ", " 
+             + q.z.ToString("F3") + ", " 
+             + (q.w * 180 / Math.PI).ToString("F3")
+             + ")";
     }
 
     Quaternion Axis4DToQuaternions(float x, float y, float z, float angle)
@@ -126,6 +140,7 @@ public class Object : MonoBehaviour
     {
         mCount = (UInt32)value;
         transform.rotation = mOrientations[mCount];
+        CurrentOrientationText.text = "Current Orientation: " + QuaternionToString(transform.rotation);
     }
 
     // Update is called once per frame
