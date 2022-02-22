@@ -13,7 +13,6 @@ public class Object : MonoBehaviour
     [SerializeField]
     TextAsset OutputFile;
 
-
     Quaternion mInitial;
     Quaternion mFinal;
     UInt32 mMaxCount;
@@ -141,10 +140,5 @@ public class Object : MonoBehaviour
         mCount = (UInt32)value;
         transform.rotation = mOrientations[mCount];
         CurrentOrientationText.text = "Current Orientation: " + QuaternionToString(transform.rotation);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
     }
 }
