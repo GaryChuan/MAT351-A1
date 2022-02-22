@@ -100,7 +100,7 @@ public class Object : MonoBehaviour
             serializedData += outputLine + "\r\n";
         }
 
-        var path = AssetDatabase.GetAssetPath(OutputFile);
+        var path = "Assets/Resources/output.txt"; //AssetDatabase.GetAssetPath(OutputFile);
         
         if(File.Exists(path))
         {
@@ -140,5 +140,17 @@ public class Object : MonoBehaviour
         mCount = (UInt32)value;
         transform.rotation = mOrientations[mCount];
         CurrentOrientationText.text = "Current Orientation: " + QuaternionToString(transform.rotation);
+    }
+
+    public void Reset()
+    {
+        mCount = 0;
+        SliderControl.value = 0;
+        transform.rotation = mOrientations[mCount];
+    }
+    public void QuitApp()
+    {
+        Debug.Log("Quit Game");
+        Application.Quit();
     }
 }
