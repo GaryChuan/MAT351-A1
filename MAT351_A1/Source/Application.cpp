@@ -61,8 +61,6 @@ Object Application::CreateObject(int width, int height) const
 
 	std::filesystem::path imagePath{ currentPath / "Resource" / "rletter.png" };
 
-	std::cout << std::filesystem::exists(imagePath) << '\n';
-
 	sf::Texture texture;
 
 	if (stream.good() && texture.loadFromFile(imagePath.string()))

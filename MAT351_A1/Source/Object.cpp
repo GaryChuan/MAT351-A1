@@ -66,7 +66,7 @@ void Object::NextOrientation()
 		++mOrientationCount;
 	}
 
-	std::cout << mOrientations[mOrientationCount] << '\n';
+	std::cout << "Current Angle : " << mOrientations[mOrientationCount] << '\n';
 	mSprite.setRotation(mOrientations[mOrientationCount]);
 }
 
@@ -77,6 +77,7 @@ void Object::PrevOrientation()
 		--mOrientationCount;
 	}
 
+	std::cout << "Current Angle : " << mOrientations[mOrientationCount] << '\n';
 	mSprite.setRotation(mOrientations[mOrientationCount]);
 }
 
