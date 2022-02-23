@@ -15,9 +15,9 @@ public class Object : MonoBehaviour
 
     Quaternion mInitial;
     Quaternion mFinal;
-    UInt32 mMaxCount;
-    UInt32 mCount = 0u;
-    Dictionary<UInt32, Quaternion> mOrientations;
+    int mMaxCount;
+    int mCount = 0;
+    List<Quaternion> mOrientations;
 
     public Slider SliderControl;
     public Text FinalOrientationText;
@@ -85,13 +85,13 @@ public class Object : MonoBehaviour
                 (float)(Convert.ToDouble(info2[3]) * Math.PI) / 180f
             );
         
-        mMaxCount = Convert.ToUInt32(info3);
+        mMaxCount = Convert.ToInt32(info3);
 
         Debug.Log("Initial: "  + QuaternionToString(mInitial));
         Debug.Log("Final: " + QuaternionToString(mFinal));
         Debug.Log("N : " + mMaxCount);
         
-        mOrientations =  new Dictionary<uint, Quaternion>();
+        mOrientations =  new List<Quaternion>();
         SliderControl.maxValue = mMaxCount;
 
         InitializeOrientations();
@@ -106,13 +106,16 @@ public class Object : MonoBehaviour
     { 
         string serializedData = string.Empty;
 
+        mCount = 0;
+        SliderControl.value = 0;
+
         for(UInt32 i = 0; i < mMaxCount + 1; ++i)
         {
             float t = (float)i / mMaxCount;
             Quaternion q = Slerp(mInitial, mFinal, t);
             string outputLine = QuaternionToString(q);
 
-            mOrientations.Add(i, q);
+            mOrientations.Add(q);
             serializedData += outputLine + "\r\n";
         }
 
@@ -141,18 +144,35 @@ public class Object : MonoBehaviour
 
     Quaternion Slerp(Quaternion q1, Quaternion q2, float t)
     {
-        double dot = Quaternion.Dot(mInitial, mFinal);
-        double invCos = Math.Acos(dot);
-        double denom = Math.Sqrt(1 - dot * dot);
+        Quaternion q3 = q2;
+        double dot = Quaternion.Dot(q1, q2);
 
-        float a = (float)(Math.Sin((1 - t) * invCos) / denom);
-        float b = (float)(Math.Sin(t * invCos) / denom);
+        if(dot < 0)
+        {
+            q3 = new Quaternion(-q2.x, -q2.y, -q2.z, -q2.w);
+            dot = Quaternion.Dot(q1, q3);
+        }
+        
+        double theta = Math.Acos(dot);
+        float a, b;
+
+        if(theta > 0)
+        {
+            double denom = Math.Sin(theta); // Math.Sqrt(1 - dot * dot);
+            a = (float)(Math.Sin((1 - t) * theta) / denom);
+            b = (float)(Math.Sin(t * theta) / denom);
+        }
+        else
+        {
+            a = (1 - t);
+            b = t;
+        }
 
         return new Quaternion(
-            q1.x * a + q2.x * b,
-            q1.y * a + q2.y * b,
-            q1.z * a + q2.z * b,
-            q1.w * a + q2.w * b
+            q1.x * a + q3.x * b,
+            q1.y * a + q3.y * b,
+            q1.z * a + q3.z * b,
+            q1.w * a + q3.w * b
         );
     }
 
@@ -164,7 +184,7 @@ public class Object : MonoBehaviour
             return;
         }
 
-        mCount = (UInt32)value;
+        mCount = (int)value;
         transform.rotation = mOrientations[mCount];
         CurrentOrientationText.text = "Current Orientation: " + QuaternionToString(transform.rotation);
     }
