@@ -56,6 +56,9 @@ Object::Object(
 
 	mSprite.setRotation(Math::RadToDegree(initialAngle));
 
+	std::cout << "Initial Orientation: " << startRot << '\n';
+	std::cout << "Final Orientation: " << endRot << '\n';
+
 	CalculateOrientations();
 }
 
@@ -66,7 +69,7 @@ void Object::NextOrientation()
 		++mOrientationCount;
 	}
 
-	std::cout << "Current Angle : " << mOrientations[mOrientationCount] << '\n';
+	std::cout << "Current Orientation : " << std::abs(mOrientations[mOrientationCount]) << '\n';
 	mSprite.setRotation(mOrientations[mOrientationCount]);
 }
 
@@ -77,7 +80,7 @@ void Object::PrevOrientation()
 		--mOrientationCount;
 	}
 
-	std::cout << "Current Angle : " << mOrientations[mOrientationCount] << '\n';
+	std::cout << "Current Orientation : " << std::abs(360 - mOrientations[mOrientationCount]) << '\n';
 	mSprite.setRotation(mOrientations[mOrientationCount]);
 }
 
